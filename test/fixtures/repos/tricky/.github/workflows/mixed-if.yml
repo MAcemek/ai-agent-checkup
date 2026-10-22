@@ -1,0 +1,19 @@
+name: Mixed condition
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  agent:
+    if: ${{ github.event.comment.author_association == 'OWNER' }} && ${{ contains(github.event.comment.body, '/gemini') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          settings: '{"coreTools": ["run_shell_command"]}'
+          prompt: Answer issue ${{ github.event.issue.number }}.

@@ -1,0 +1,42 @@
+name: 'AI agent workflow checkup'
+description: 'Checks workflows that run AI coding agents for prompt injection paths to secrets and write access.'
+
+branding:
+  icon: 'shield'
+  color: 'orange'
+
+inputs:
+  path:
+    description: 'Repository directory (or one workflow file) to check, relative to the workspace.'
+    required: false
+    default: '.'
+  fail-on:
+    description: 'Fail the run when a problem has this severity or higher: high, medium, low or any. Empty means never fail.'
+    required: false
+    default: ''
+  sarif-file:
+    description: 'Write a SARIF 2.1.0 file to this path for upload to code scanning. Empty means no file.'
+    required: false
+    default: ''
+
+outputs:
+  high-count:
+    description: 'Number of high severity problems.'
+  medium-count:
+    description: 'Number of medium severity problems.'
+  low-count:
+    description: 'Number of low severity problems.'
+  info-count:
+    description: 'Number of info findings.'
+  total-count:
+    description: 'Number of problems of any severity.'
+  agent-steps:
+    description: 'Number of AI agent steps found.'
+  report-json:
+    description: 'Path to the full JSON report.'
+  sarif-file:
+    description: 'Path to the SARIF file, or empty when sarif-file is not set.'
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'

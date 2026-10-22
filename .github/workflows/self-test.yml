@@ -1,0 +1,55 @@
+name: Self test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  own-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - id: checkup
+        uses: ./
+
+      - name: Check outputs
+        env:
+          TOTAL: ${{ steps.checkup.outputs.total-count }}
+          AGENT_STEPS: ${{ steps.checkup.outputs.agent-steps }}
+          REPORT: ${{ steps.checkup.outputs.report-json }}
+        run: |
+          echo "problems: $TOTAL, agent steps: $AGENT_STEPS"
+          test "$TOTAL" = "0"
+          test -s "$REPORT"
+
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - id: checkup
+        uses: ./
+        with:
+          path: test/fixtures/repos/vulnerable
+          sarif-file: ${{ runner.temp }}/vulnerable.sarif
+
+      - name: Check outputs
+        env:
+          HIGH: ${{ steps.checkup.outputs.high-count }}
+          TOTAL: ${{ steps.checkup.outputs.total-count }}
+          SARIF: ${{ steps.checkup.outputs.sarif-file }}
+        run: |
+          echo "high: $HIGH, total: $TOTAL"
+          test "$HIGH" -gt 0
+          test -s "$SARIF"
+          test -z "$(git status --porcelain)"

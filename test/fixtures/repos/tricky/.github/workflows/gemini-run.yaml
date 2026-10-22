@@ -1,0 +1,24 @@
+name: Gemini in a run step
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install
+        run: npm install -g @google/gemini-cli@0.40.0-preview.1
+      - name: Write the prompt
+        run: |
+          echo "Title: ${{ github.event.issue.title }}" > prompt.txt
+      - name: Triage
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          gemini --yolo -p "$(cat prompt.txt)"

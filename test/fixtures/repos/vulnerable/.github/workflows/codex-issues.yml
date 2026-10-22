@@ -1,0 +1,19 @@
+name: Codex helper
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  help:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          allow-users: '*'
+          safety-strategy: unsafe
+          prompt: |
+            Answer this comment: ${{ github.event.comment.body }}

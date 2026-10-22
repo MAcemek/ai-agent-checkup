@@ -1,0 +1,24 @@
+name: Fix command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: write-all
+
+jobs:
+  fix:
+    if: contains(github.event.comment.body, '/fix')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.100
+
+      - name: Run Claude Code
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REQUEST: ${{ github.event.comment.body }}
+        run: |
+          claude -p "Do what this comment asks: $REQUEST" --dangerously-skip-permissions

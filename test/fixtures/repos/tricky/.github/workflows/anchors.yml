@@ -1,0 +1,24 @@
+name: Anchors
+
+on: [issues, push]
+
+jobs:
+  first:
+    runs-on: ubuntu-latest
+    permissions: &perms
+      contents: read
+      issues: write
+    steps:
+      - &gemini
+        name: Gemini
+        uses: google-github-actions/run-gemini-cli@v0
+        with: &inputs
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: 'Label this: ${{ github.event.issue.title }}'
+
+  second:
+    runs-on: ubuntu-latest
+    permissions: *perms
+    steps:
+      - <<: *gemini
+        name: Gemini again

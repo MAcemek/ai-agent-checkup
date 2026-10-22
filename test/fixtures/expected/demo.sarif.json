@@ -1,0 +1,458 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ai-agent-checkup",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/MAcemek/ai-agent-checkup",
+          "rules": [
+            {
+              "id": "anyone-can-run",
+              "name": "AnyoneCanRun",
+              "shortDescription": {
+                "text": "Anyone can start the agent"
+              },
+              "fullDescription": {
+                "text": "An event that any GitHub user can fire starts the agent with no gate, or an allow-list is set to \"*\"."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "An event that any GitHub user can fire starts the agent with no gate, or an allow-list is set to \"*\"."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "untrusted-input",
+              "name": "UntrustedInput",
+              "shortDescription": {
+                "text": "Untrusted text in the prompt"
+              },
+              "fullDescription": {
+                "text": "Issue, pull request, comment or commit text is put into the prompt, its environment or a file that an earlier step writes."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "Issue, pull request, comment or commit text is put into the prompt, its environment or a file that an earlier step writes."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "write-permissions",
+              "name": "WritePermissions",
+              "shortDescription": {
+                "text": "Write access and secrets in reach"
+              },
+              "fullDescription": {
+                "text": "The agent job can write to the repository (or uses the default token permissions) or has secrets in its environment."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "The agent job can write to the repository (or uses the default token permissions) or has secrets in its environment."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "dangerous-settings",
+              "name": "DangerousSettings",
+              "shortDescription": {
+                "text": "Risky agent settings"
+              },
+              "fullDescription": {
+                "text": "Unrestricted shell tools, permission checks or sandboxes turned off, a weakened Codex safety strategy, or the GitHub MCP server."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "Unrestricted shell tools, permission checks or sandboxes turned off, a weakened Codex safety strategy, or the GitHub MCP server."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "untrusted-checkout",
+              "name": "UntrustedCheckout",
+              "shortDescription": {
+                "text": "Pull request code checked out before the agent"
+              },
+              "fullDescription": {
+                "text": "A privileged workflow checks out the pull request head before the agent runs, so the agent works in code that an outsider wrote."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "A privileged workflow checks out the pull request head before the agent runs, so the agent works in code that an outsider wrote."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "untrusted-trigger",
+              "name": "UntrustedTrigger",
+              "shortDescription": {
+                "text": "Outside users can trigger the workflow"
+              },
+              "fullDescription": {
+                "text": "The workflow runs on events that outside users can fire; a gate limits who can start the agent."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "The workflow runs on events that outside users can fire; a gate limits who can start the agent."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "outdated-agent",
+              "name": "OutdatedAgent",
+              "shortDescription": {
+                "text": "Outdated agent version"
+              },
+              "fullDescription": {
+                "text": "The action, or the agent CLI it installs, is older than the versions with the August 2026 fixes."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "The action, or the agent CLI it installs, is older than the versions with the August 2026 fixes."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "shared-checkout",
+              "name": "SharedCheckout",
+              "shortDescription": {
+                "text": "Agent runs share one checkout"
+              },
+              "fullDescription": {
+                "text": "Several agent steps run in one job, so a later run can read instruction files such as AGENTS.md that an earlier run wrote."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "Several agent steps run in one job, so a later run can read instruction files such as AGENTS.md that an earlier run wrote."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "checkout-credentials",
+              "name": "CheckoutCredentials",
+              "shortDescription": {
+                "text": "Checkout keeps the token on disk"
+              },
+              "fullDescription": {
+                "text": "actions/checkout runs without persist-credentials: false in a job with an agent."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "actions/checkout runs without persist-credentials: false in a job with an agent."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "unpinned-agent",
+              "name": "UnpinnedAgent",
+              "shortDescription": {
+                "text": "Agent action not pinned to a commit"
+              },
+              "fullDescription": {
+                "text": "The agent action is used by tag or branch instead of a full commit SHA."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "The agent action is used by tag or branch instead of a full commit SHA."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            },
+            {
+              "id": "parse-error",
+              "name": "ParseError",
+              "shortDescription": {
+                "text": "Workflow could not be read"
+              },
+              "fullDescription": {
+                "text": "The file is not valid YAML, is not a workflow, or has more than one YAML document."
+              },
+              "helpUri": "https://github.com/MAcemek/ai-agent-checkup#checks",
+              "help": {
+                "text": "The file is not valid YAML, is not a workflow, or has more than one YAML document."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "github-actions",
+                  "ai-agents"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "untrusted-checkout",
+          "ruleIndex": 4,
+          "level": "error",
+          "message": {
+            "text": "Pull request code checked out before the agent: This pull_request_target workflow checks out the pull request head (ref: ${{ github.event.pull_request.head.sha }}) into the workspace root before Codex Action runs. The run has the repository's secrets, and the agent works in files an outsider controls, including instruction files such as AGENTS.md and tool configuration. allow-unsafe-pr-checkout: true turns off the protection that actions/checkout v7 has for this. Fix: Check out the base branch at the workspace root (no ref:). If the agent needs the pull request files, check them out into a subdirectory with path: and treat them as untrusted data."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/codex-review.yml"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "job": "review",
+            "step": "actions/checkout@v7",
+            "agent": "codex-action"
+          }
+        },
+        {
+          "ruleId": "write-permissions",
+          "ruleIndex": 2,
+          "level": "error",
+          "message": {
+            "text": "Write access and secrets in reach: The token can write: issues. The agent's environment has the secrets ANTHROPIC_API_KEY and GITHUB_TOKEN. Anyone who can start the agent can try to make it use or leak them. Fix: Give the job only the permissions it needs (for example contents: read and issues: write for triage) and only the secrets the agent needs. Prefer short-lived credentials such as OIDC, and rotate secrets this workflow could reach."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/issue-triage.yml"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "job": "triage",
+            "step": null,
+            "agent": "claude-code-action"
+          }
+        },
+        {
+          "ruleId": "anyone-can-run",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Anyone can start the agent: allowed_non_write_users: \"*\" lets any GitHub user start Claude Code Action, and the workflow runs on issues, which any GitHub user can fire. No condition stops them, so anyone can give the agent instructions while it has a token with issues write access, and the secrets ANTHROPIC_API_KEY and GITHUB_TOKEN. Fix: Remove allowed_non_write_users: \"*\" or list only trusted user names, so that only people with write access can start the agent."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/issue-triage.yml"
+                },
+                "region": {
+                  "startLine": 24
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "job": "triage",
+            "step": "Triage with Claude",
+            "agent": "claude-code-action"
+          }
+        },
+        {
+          "ruleId": "untrusted-input",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Untrusted text in the prompt: Claude Code Action gets text that outside users write: ${{ github.event.issue.title }} and ${{ github.event.issue.body }}. A prompt injection in that text can make the agent use its tools for the attacker. Moving the text into env: does not help, because the agent still reads it. Fix: Do not put issue, pull request, comment or commit text into the prompt. Pass the number instead, for example ${{ github.event.issue.number }}, let the agent read the text with read-only tools, and treat the agent output as untrusted."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/issue-triage.yml"
+                },
+                "region": {
+                  "startLine": 27
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "job": "triage",
+            "step": "Triage with Claude",
+            "agent": "claude-code-action"
+          }
+        },
+        {
+          "ruleId": "shared-checkout",
+          "ruleIndex": 7,
+          "level": "warning",
+          "message": {
+            "text": "Agent runs share one checkout: Step \"Find problems\" can write files, and step \"Write the review\" later runs Codex Action in the same checkout, where it reads instruction files such as AGENTS.md. A prompt injection in the first run can steer the second. There is no Codex fix for this; the CSA research note recommends separate jobs. Fix: Run each agent pass in its own job with a fresh checkout, or make the earlier runs read-only (for Codex, sandbox: read-only)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/codex-review.yml"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "medium",
+            "job": "review",
+            "step": "Write the review",
+            "agent": "codex-action"
+          }
+        },
+        {
+          "ruleId": "untrusted-trigger",
+          "ruleIndex": 5,
+          "level": "note",
+          "message": {
+            "text": "Outside users can trigger the workflow: The workflow runs on pull_request_target, which outside users can fire, and the agent only starts for trusted users: Codex Action checks for write access. The agent can still read text that others wrote. Fix: Keep the gate, and keep the permissions and secrets of the job small."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/codex-review.yml"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "job": "review",
+            "step": "Find problems",
+            "agent": "codex-action"
+          }
+        },
+        {
+          "ruleId": "write-permissions",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "Write access and secrets in reach: The agent's environment has the secret OPENAI_API_KEY. A prompt injection in text the agent reads can try to make it use or leak them. Fix: Give the job only the permissions it needs (for example contents: read and issues: write for triage) and only the secrets the agent needs. Prefer short-lived credentials such as OIDC, and rotate secrets this workflow could reach."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/codex-review.yml"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "job": "review",
+            "step": null,
+            "agent": "codex-action"
+          }
+        },
+        {
+          "ruleId": "unpinned-agent",
+          "ruleIndex": 9,
+          "level": "note",
+          "message": {
+            "text": "Agent action not pinned to a commit: anthropics/claude-code-action is used by the ref v1, which can point to different code at any time. Fix: Pin the action to a full commit SHA with a version comment, for example uses: anthropics/claude-code-action@<commit SHA> # <version>, and let Dependabot update it. GitHub workflow lockfiles (public preview since October 2026) can also record the exact commits."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test/fixtures/repos/demo/.github/workflows/issue-triage.yml"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "job": "triage",
+            "step": "Triage with Claude",
+            "agent": "claude-code-action"
+          }
+        }
+      ]
+    }
+  ]
+}

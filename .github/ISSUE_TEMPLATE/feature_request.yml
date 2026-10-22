@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest a new agent, a new check, a better heuristic or another improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like ai-agent-checkup to do?
+      description: For a new agent, link its action.yml or documentation.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered

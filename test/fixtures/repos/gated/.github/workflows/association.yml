@@ -1,0 +1,25 @@
+name: Triage on request
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    if: >-
+      contains(github.event.comment.body, '/triage') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          settings: |
+            {
+              "coreTools": ["run_shell_command(gh issue edit)", "run_shell_command(gh label list)"]
+            }
+          prompt: Add labels to issue ${{ github.event.issue.number }}.

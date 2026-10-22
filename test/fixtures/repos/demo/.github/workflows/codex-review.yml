@@ -1,0 +1,29 @@
+name: Codex review
+
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          allow-unsafe-pr-checkout: true
+          persist-credentials: false
+
+      - name: Find problems
+        uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/prompts/find.md
+
+      - name: Write the review
+        uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/prompts/review.md

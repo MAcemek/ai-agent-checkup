@@ -1,0 +1,25 @@
+name: Explain CI failures
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  explain:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          allow-unsafe-pr-checkout: true
+          path: pr
+
+      - uses: austenstone/copilot-cli@v4
+        with:
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          prompt: Explain why the CI run failed.

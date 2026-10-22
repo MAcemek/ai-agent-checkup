@@ -1,0 +1,18 @@
+name: Maintainer command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask Copilot
+        if: github.actor == 'example-maintainer' && startsWith(github.event.comment.body, '/ask')
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+        run: copilot -p "Answer the question in issue ${{ github.event.issue.number }}" --allow-tool 'shell(gh issue view)'

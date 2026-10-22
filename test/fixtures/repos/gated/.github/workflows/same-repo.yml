@@ -1,0 +1,17 @@
+name: Branch review
+
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/ai-inference@a380166897b5408b8fb7dddd148142794cb5624a # v3
+        with:
+          prompt: Review the pull request.

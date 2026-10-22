@@ -1,0 +1,93 @@
+ai-agent-checkup 0.1.0
+Path: test/fixtures/repos/demo
+Scanned 2 workflows with 3 agent steps.
+
+Found 8 problems: 4 high, 1 medium, 3 low, 0 info.
+
+[HIGH] Pull request code checked out before the agent (untrusted-checkout)
+  .github/workflows/codex-review.yml:15  job review, step "actions/checkout@v7"
+  This pull_request_target workflow checks out the pull request head (ref: ${{
+  github.event.pull_request.head.sha }}) into the workspace root before Codex Action runs. The run
+  has the repository's secrets, and the agent works in files an outsider controls, including
+  instruction files such as AGENTS.md and tool configuration. allow-unsafe-pr-checkout: true turns
+  off the protection that actions/checkout v7 has for this.
+     4 | pull_request_target:
+    13 | - uses: actions/checkout@v7
+    15 | ref: ${{ github.event.pull_request.head.sha }}
+  Fix: Check out the base branch at the workspace root (no ref:). If the agent needs the pull
+       request files, check them out into a subdirectory with path: and treat them as untrusted
+       data.
+
+[HIGH] Write access and secrets in reach (write-permissions)
+  .github/workflows/issue-triage.yml:9  job triage
+  The token can write: issues. The agent's environment has the secrets ANTHROPIC_API_KEY and
+  GITHUB_TOKEN. Anyone who can start the agent can try to make it use or leak them.
+     9 | issues: write
+    22 | anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+    23 | github_token: ${{ secrets.GITHUB_TOKEN }}
+  Fix: Give the job only the permissions it needs (for example contents: read and issues: write for
+       triage) and only the secrets the agent needs. Prefer short-lived credentials such as OIDC,
+       and rotate secrets this workflow could reach.
+
+[HIGH] Anyone can start the agent (anyone-can-run)
+  .github/workflows/issue-triage.yml:24  job triage, step "Triage with Claude"
+  allowed_non_write_users: "*" lets any GitHub user start Claude Code Action, and the workflow runs
+  on issues, which any GitHub user can fire. No condition stops them, so anyone can give the agent
+  instructions while it has a token with issues write access, and the secrets ANTHROPIC_API_KEY and
+  GITHUB_TOKEN.
+     4 | issues:
+    20 | uses: anthropics/claude-code-action@v1
+    24 | allowed_non_write_users: "*"
+  Fix: Remove allowed_non_write_users: "*" or list only trusted user names, so that only people with
+       write access can start the agent.
+
+[HIGH] Untrusted text in the prompt (untrusted-input)
+  .github/workflows/issue-triage.yml:27  job triage, step "Triage with Claude"
+  Claude Code Action gets text that outside users write: ${{ github.event.issue.title }} and ${{
+  github.event.issue.body }}. A prompt injection in that text can make the agent use its tools for
+  the attacker. Moving the text into env: does not help, because the agent still reads it.
+    27 | Title: ${{ github.event.issue.title }}
+    28 | Body: ${{ github.event.issue.body }}
+  Fix: Do not put issue, pull request, comment or commit text into the prompt. Pass the number
+       instead, for example ${{ github.event.issue.number }}, let the agent read the text with
+       read-only tools, and treat the agent output as untrusted.
+
+[MEDIUM] Agent runs share one checkout (shared-checkout)
+  .github/workflows/codex-review.yml:26  job review, step "Write the review"
+  Step "Find problems" can write files, and step "Write the review" later runs Codex Action in the
+  same checkout, where it reads instruction files such as AGENTS.md. A prompt injection in the first
+  run can steer the second. There is no Codex fix for this; the CSA research note recommends
+  separate jobs.
+    20 | uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13
+    26 | uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13
+  Fix: Run each agent pass in its own job with a fresh checkout, or make the earlier runs read-only
+       (for Codex, sandbox: read-only).
+
+[LOW] Outside users can trigger the workflow (untrusted-trigger)
+  .github/workflows/codex-review.yml:20  job review, step "Find problems"
+  The workflow runs on pull_request_target, which outside users can fire, and the agent only starts
+  for trusted users: Codex Action checks for write access. The agent can still read text that others
+  wrote.
+     4 | pull_request_target:
+    20 | uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13
+  Fix: Keep the gate, and keep the permissions and secrets of the job small.
+
+[LOW] Write access and secrets in reach (write-permissions)
+  .github/workflows/codex-review.yml:22  job review
+  The agent's environment has the secret OPENAI_API_KEY. A prompt injection in text the agent reads
+  can try to make it use or leak them.
+    22 | openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+  Fix: Give the job only the permissions it needs (for example contents: read and issues: write for
+       triage) and only the secrets the agent needs. Prefer short-lived credentials such as OIDC,
+       and rotate secrets this workflow could reach.
+
+[LOW] Agent action not pinned to a commit (unpinned-agent)
+  .github/workflows/issue-triage.yml:20  job triage, step "Triage with Claude"
+  anthropics/claude-code-action is used by the ref v1, which can point to different code at any
+  time.
+    20 | uses: anthropics/claude-code-action@v1
+  Fix: Pin the action to a full commit SHA with a version comment, for example uses:
+       anthropics/claude-code-action@<commit SHA> # <version>, and let Dependabot update it. GitHub
+       workflow lockfiles (public preview since October 2026) can also record the exact commits.
+
+Static analysis of workflow files only. It cannot see repository settings, such as who can open issues or which secrets exist.

@@ -1,0 +1,228 @@
+{
+  "tool": {
+    "name": "ai-agent-checkup",
+    "version": "0.1.0",
+    "homepage": "https://github.com/MAcemek/ai-agent-checkup"
+  },
+  "path": "test/fixtures/repos/demo",
+  "target": "directory",
+  "workflows": [
+    {
+      "file": ".github/workflows/codex-review.yml",
+      "agentSteps": 2
+    },
+    {
+      "file": ".github/workflows/issue-triage.yml",
+      "agentSteps": 1
+    }
+  ],
+  "summary": {
+    "high": 4,
+    "medium": 1,
+    "low": 3,
+    "info": 0,
+    "total": 8,
+    "workflows": 2,
+    "agentSteps": 3
+  },
+  "findings": [
+    {
+      "id": "untrusted-checkout",
+      "severity": "high",
+      "title": "Pull request code checked out before the agent",
+      "explanation": "This pull_request_target workflow checks out the pull request head (ref: ${{ github.event.pull_request.head.sha }}) into the workspace root before Codex Action runs. The run has the repository's secrets, and the agent works in files an outsider controls, including instruction files such as AGENTS.md and tool configuration. allow-unsafe-pr-checkout: true turns off the protection that actions/checkout v7 has for this.",
+      "fix": "Check out the base branch at the workspace root (no ref:). If the agent needs the pull request files, check them out into a subdirectory with path: and treat them as untrusted data.",
+      "file": ".github/workflows/codex-review.yml",
+      "line": 15,
+      "job": "review",
+      "step": "actions/checkout@v7",
+      "agent": "codex-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 4,
+          "text": "pull_request_target:"
+        },
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 13,
+          "text": "- uses: actions/checkout@v7"
+        },
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 15,
+          "text": "ref: ${{ github.event.pull_request.head.sha }}"
+        }
+      ]
+    },
+    {
+      "id": "write-permissions",
+      "severity": "high",
+      "title": "Write access and secrets in reach",
+      "explanation": "The token can write: issues. The agent's environment has the secrets ANTHROPIC_API_KEY and GITHUB_TOKEN. Anyone who can start the agent can try to make it use or leak them.",
+      "fix": "Give the job only the permissions it needs (for example contents: read and issues: write for triage) and only the secrets the agent needs. Prefer short-lived credentials such as OIDC, and rotate secrets this workflow could reach.",
+      "file": ".github/workflows/issue-triage.yml",
+      "line": 9,
+      "job": "triage",
+      "step": null,
+      "agent": "claude-code-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 9,
+          "text": "issues: write"
+        },
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 22,
+          "text": "anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}"
+        },
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 23,
+          "text": "github_token: ${{ secrets.GITHUB_TOKEN }}"
+        }
+      ]
+    },
+    {
+      "id": "anyone-can-run",
+      "severity": "high",
+      "title": "Anyone can start the agent",
+      "explanation": "allowed_non_write_users: \"*\" lets any GitHub user start Claude Code Action, and the workflow runs on issues, which any GitHub user can fire. No condition stops them, so anyone can give the agent instructions while it has a token with issues write access, and the secrets ANTHROPIC_API_KEY and GITHUB_TOKEN.",
+      "fix": "Remove allowed_non_write_users: \"*\" or list only trusted user names, so that only people with write access can start the agent.",
+      "file": ".github/workflows/issue-triage.yml",
+      "line": 24,
+      "job": "triage",
+      "step": "Triage with Claude",
+      "agent": "claude-code-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 4,
+          "text": "issues:"
+        },
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 20,
+          "text": "uses: anthropics/claude-code-action@v1"
+        },
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 24,
+          "text": "allowed_non_write_users: \"*\""
+        }
+      ]
+    },
+    {
+      "id": "untrusted-input",
+      "severity": "high",
+      "title": "Untrusted text in the prompt",
+      "explanation": "Claude Code Action gets text that outside users write: ${{ github.event.issue.title }} and ${{ github.event.issue.body }}. A prompt injection in that text can make the agent use its tools for the attacker. Moving the text into env: does not help, because the agent still reads it.",
+      "fix": "Do not put issue, pull request, comment or commit text into the prompt. Pass the number instead, for example ${{ github.event.issue.number }}, let the agent read the text with read-only tools, and treat the agent output as untrusted.",
+      "file": ".github/workflows/issue-triage.yml",
+      "line": 27,
+      "job": "triage",
+      "step": "Triage with Claude",
+      "agent": "claude-code-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 27,
+          "text": "Title: ${{ github.event.issue.title }}"
+        },
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 28,
+          "text": "Body: ${{ github.event.issue.body }}"
+        }
+      ]
+    },
+    {
+      "id": "shared-checkout",
+      "severity": "medium",
+      "title": "Agent runs share one checkout",
+      "explanation": "Step \"Find problems\" can write files, and step \"Write the review\" later runs Codex Action in the same checkout, where it reads instruction files such as AGENTS.md. A prompt injection in the first run can steer the second. There is no Codex fix for this; the CSA research note recommends separate jobs.",
+      "fix": "Run each agent pass in its own job with a fresh checkout, or make the earlier runs read-only (for Codex, sandbox: read-only).",
+      "file": ".github/workflows/codex-review.yml",
+      "line": 26,
+      "job": "review",
+      "step": "Write the review",
+      "agent": "codex-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 20,
+          "text": "uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13"
+        },
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 26,
+          "text": "uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13"
+        }
+      ]
+    },
+    {
+      "id": "untrusted-trigger",
+      "severity": "low",
+      "title": "Outside users can trigger the workflow",
+      "explanation": "The workflow runs on pull_request_target, which outside users can fire, and the agent only starts for trusted users: Codex Action checks for write access. The agent can still read text that others wrote.",
+      "fix": "Keep the gate, and keep the permissions and secrets of the job small.",
+      "file": ".github/workflows/codex-review.yml",
+      "line": 20,
+      "job": "review",
+      "step": "Find problems",
+      "agent": "codex-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 4,
+          "text": "pull_request_target:"
+        },
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 20,
+          "text": "uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567 # v1.13"
+        }
+      ]
+    },
+    {
+      "id": "write-permissions",
+      "severity": "low",
+      "title": "Write access and secrets in reach",
+      "explanation": "The agent's environment has the secret OPENAI_API_KEY. A prompt injection in text the agent reads can try to make it use or leak them.",
+      "fix": "Give the job only the permissions it needs (for example contents: read and issues: write for triage) and only the secrets the agent needs. Prefer short-lived credentials such as OIDC, and rotate secrets this workflow could reach.",
+      "file": ".github/workflows/codex-review.yml",
+      "line": 22,
+      "job": "review",
+      "step": null,
+      "agent": "codex-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/codex-review.yml",
+          "line": 22,
+          "text": "openai-api-key: ${{ secrets.OPENAI_API_KEY }}"
+        }
+      ]
+    },
+    {
+      "id": "unpinned-agent",
+      "severity": "low",
+      "title": "Agent action not pinned to a commit",
+      "explanation": "anthropics/claude-code-action is used by the ref v1, which can point to different code at any time.",
+      "fix": "Pin the action to a full commit SHA with a version comment, for example uses: anthropics/claude-code-action@<commit SHA> # <version>, and let Dependabot update it. GitHub workflow lockfiles (public preview since October 2026) can also record the exact commits.",
+      "file": ".github/workflows/issue-triage.yml",
+      "line": 20,
+      "job": "triage",
+      "step": "Triage with Claude",
+      "agent": "claude-code-action",
+      "evidence": [
+        {
+          "file": ".github/workflows/issue-triage.yml",
+          "line": 20,
+          "text": "uses: anthropics/claude-code-action@v1"
+        }
+      ]
+    }
+  ],
+  "note": "Static analysis of workflow files only. It cannot see repository settings, such as who can open issues or which secrets exist."
+}

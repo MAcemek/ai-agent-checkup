@@ -1,0 +1,18 @@
+name: Two documents
+
+on: issue_comment
+
+permissions:
+  contents: read
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: openai/codex-action@0123456789abcdef0123456789abcdef01234567
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt: Answer the comment.
+---
+name: Ignored second document
+on: push
